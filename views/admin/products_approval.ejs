@@ -1,0 +1,36 @@
+<h1>Products for Approval</h1>
+<% if (products && products.length > 0) { %>
+    <table>
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Seller</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% products.forEach(product => { %>
+                <tr>
+                    <td><img src="<%= product.imageUrl %>" alt="<%= product.name %>" style="width:50px; height:auto;"></td>
+                    <td><a href="/products/<%= product._id %>" target="_blank"><%= product.name %></a></td>
+                    <td><%= product.seller.username %> (<%= product.seller.email %>)</td>
+                    <td>$<%= product.price.toFixed(2) %></td>
+                    <td><%= product.status %></td>
+                    <td>
+                        <form action="/admin/products/<%= product._id %>/approve?_method=PUT" method="POST" style="display:inline;">
+                            <button type="submit">Approve</button>
+                        </form>
+                        <form action="/admin/products/<%= product._id %>/reject?_method=PUT" method="POST" style="display:inline;">
+                            <button type="submit">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+<% } else { %>
+    <p>No products are currently pending approval.</p>
+<% } %>

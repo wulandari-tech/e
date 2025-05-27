@@ -1,0 +1,20 @@
+<nav>
+    <a href="/">MyMarketplace</a>
+    <ul>
+        <li><a href="/products">Products</a></li>
+        <% if (currentUser) { %>
+            <% if (currentUser.role === 'admin') { %>
+                <li><a href="/admin/dashboard">Admin</a></li>
+            <% } %>
+            <% if (currentUser.role === 'seller' || currentUser.role === 'admin') { %>
+                 <li><a href="/user/dashboard">Seller Dashboard</a></li>
+                 <li><a href="/products/new">Add Product</a></li>
+            <% } %>
+            <li><span>Welcome, <%= currentUser.username %></span></li>
+            <li><a href="/auth/logout">Logout</a></li>
+        <% } else { %>
+            <li><a href="/auth/login">Login</a></li>
+            <li><a href="/auth/register">Register</a></li>
+        <% } %>
+    </ul>
+</nav>

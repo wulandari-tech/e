@@ -1,0 +1,142 @@
+<h1 class="text-center"><i class="fas fa-user-astronaut"></i> My Profile - <%= currentUser.username %></h1>
+
+<% if (locals.message && (typeof message === 'string' || message.text)) { %>
+    <div class="message-banner <%= message.type || 'info' %>" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+        <%= typeof message === 'string' ? message : message.text %>
+    </div>
+<% } %>
+
+<div class="profile-layout">
+    <div class="profile-sidebar">
+        <div class="profile-avatar-section text-center">
+            <img src="<%= currentUser.avatarUrl || '/img/default-avatar.png' %>" alt="<%= currentUser.username %>'s Avatar" class="profile-avatar-main" id="profileAvatarPreview">
+            <form action="/user/profile/avatar" method="POST" enctype="multipart/form-data" id="avatarUploadForm" class="mt-1">
+                <label for="avatarFile" class="form-button avatar-upload-label"><i class="fas fa-camera"></i> Change Avatar</label>
+                <input type="file" name="avatar" id="avatarFile" accept="image/*" style="display: none;">
+            </form>
+        </div>
+        <ul class="profile-nav">
+            <li><a href="#profile-details" class="profile-nav-link active" data-tab="profile-details"><i class="fas fa-id-card"></i> Profile Details</a></li>
+            <li><a href="#change-password" class="profile-nav-link" data-tab="change-password"><i class="fas fa-key"></i> Change Password</a></li>
+            <li><a href="#account-balance" class="profile-nav-link" data-tab="account-balance"><i class="fas fa-wallet"></i> Account Balance</a></li>
+             <% if (currentUser.role === 'seller' || currentUser.role === 'admin') { %>
+                <li><a href="/user/dashboard"><i class="fas fa-tachometer-alt-fast"></i> Seller Hub</a></li>
+            <% } %>
+        </ul>
+    </div>
+
+    <div class="profile-content">
+        <div id="profile-details" class="profile-tab-content active">
+            <h2>Edit Profile Information</h2>
+            <form action="/user/profile" method="POST">
+                <div>
+                    <label for="username"><i class="fas fa-user"></i> Username:</label>
+                    <input type="text" id="username" name="username" value="<%= currentUser.username %>" required>
+                </div>
+                <div>
+                    <label for="email"><i class="fas fa-envelope"></i> Email Address:</label>
+                    <input type="email" id="email" name="email" value="<%= currentUser.email %>" required>
+                </div>
+                <% if (currentUser.role === 'seller') { %>
+                    <div id="whatsappFieldProfile">
+                        <label for="whatsappNumber"><i class="fab fa-whatsapp"></i> WhatsApp Number (e.g., 628123...):</label>
+                        <input type="text" id="whatsappNumber" name="whatsappNumber" value="<%= currentUser.whatsappNumber || '' %>" placeholder="Format: 628xxxxxxxxxx">
+                    </div>
+                <% } %>
+                <div class="text-center button-group">
+                    <button type="submit" class="form-button"><i class="fas fa-save"></i> Save Profile Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="change-password" class="profile-tab-content">
+            <h2>Change Your Password</h2>
+            <form action="/user/profile/password" method="POST">
+                <div>
+                    <label for="currentPassword"><i class="fas fa-lock"></i> Current Password:</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div>
+                    <label for="newPassword"><i class="fas fa-key"></i> New Password:</label>
+                    <input type="password" id="newPassword" name="newPassword" required minlength="6">
+                </div>
+                <div>
+                    <label for="confirmNewPassword"><i class="fas fa-redo-alt"></i> Confirm New Password:</label>
+                    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required>
+                </div>
+                <div class="text-center button-group">
+                    <button type="submit" class="form-button"><i class="fas fa-exchange-alt"></i> Update Password</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="account-balance" class="profile-tab-content">
+            <h2><i class="fas fa-file-invoice-dollar"></i> Account Balance</h2>
+            <p style="font-size: 1.5em; color: var(--accent-success);">
+                Current Balance: <strong>IDR <%= currentUser.balance ? currentUser.balance.toLocaleString('id-ID') : '0' %></strong>
+            </p>
+            <div class="button-group">
+                <a href="/wallet/deposit" class="form-button"><i class="fas fa-plus-circle"></i> Deposit Funds</a>
+                <a href="/wallet/transactions" class="form-button" style="background: var(--bg-tertiary); border: 1px solid var(--accent-primary); color: var(--accent-primary);"><i class="fas fa-list-alt"></i> View Transactions</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profileNavLinks = document.querySelectorAll('.profile-nav-link');
+    const profileTabContents = document.querySelectorAll('.profile-tab-content');
+
+    profileNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+
+            profileNavLinks.forEach(navLink => navLink.classList.remove('active'));
+            this.classList.add('active');
+
+            profileTabContents.forEach(tabContent => {
+                if (tabContent.id === tabId) {
+                    tabContent.classList.add('active');
+                } else {
+                    tabContent.classList.remove('active');
+                }
+            });
+            window.location.hash = tabId; // Update URL hash for direct linking
+        });
+    });
+
+    // Activate tab based on URL hash on page load
+    if (window.location.hash) {
+        const activeTabId = window.location.hash.substring(1);
+        const activeNavLink = document.querySelector(`.profile-nav-link[data-tab="${activeTabId}"]`);
+        if (activeNavLink) {
+            activeNavLink.click();
+        }
+    }
+
+    // Avatar preview and auto-submit
+    const avatarFile = document.getElementById('avatarFile');
+    const avatarPreview = document.getElementById('profileAvatarPreview');
+    const avatarUploadForm = document.getElementById('avatarUploadForm');
+
+    if (avatarFile && avatarPreview && avatarUploadForm) {
+        avatarFile.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+                // Automatically submit the form when a file is chosen
+                // Add a small delay to allow preview to potentially render, though not strictly necessary
+                setTimeout(() => {
+                    avatarUploadForm.submit();
+                }, 100);
+            }
+        });
+    }
+});
+</script>

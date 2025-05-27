@@ -1,0 +1,44 @@
+<%- contentFor('body') %>
+<h1><i class="fas fa-history"></i> My Transaction History</h1>
+
+<% if (message && message.text) { %>
+    <div class="message-banner <%= message.type %>"><%= message.text %></div>
+<% } %>
+
+<% if (deposits && deposits.length > 0) { %>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Ref ID</th>
+                <th>Method</th>
+                <th>Amount (IDR)</th>
+                <th>Fee (IDR)</th>
+                <th>Net Credited (IDR)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% deposits.forEach(deposit => { %>
+                <tr>
+                    <td><%= new Date(deposit.createdAt).toLocaleDateString('en-GB') %> <%= new Date(deposit.createdAt).toLocaleTimeString('en-GB', {hour12:false}) %></td>
+                    <td><%= deposit.reffId %></td>
+                    <td><%= deposit.method %></td>
+                    <td><%= deposit.amount.toLocaleString('id-ID') %></td>
+                    <td><%= deposit.fee.toLocaleString('id-ID') %></td>
+                    <td><%= deposit.netAmount.toLocaleString('id-ID') %></td>
+                    <td style="text-transform: capitalize; color: <%= deposit.status === 'pending' ? 'orange' : (deposit.status === 'success' ? 'var(--accent-success)' : 'var(--accent-error)') %>">
+                        <%= deposit.status %>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+<% } else { %>
+    <p class="text-center mt-2" style="font-size: 1.2em;">You have no transactions yet.</p>
+<% } %>
+
+<div class="text-center mt-2">
+    <a href="/wallet/deposit" class="form-button"><i class="fas fa-plus-circle"></i> Make a New Deposit</a>
+    <a href="/user/profile" class="form-button" style="background: var(--accent-secondary); margin-left:10px;"><i class="fas fa-user-circle"></i> Back to Profile</a>
+</div>

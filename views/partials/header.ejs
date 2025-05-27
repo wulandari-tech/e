@@ -1,0 +1,344 @@
+/* public/css/header.css */
+
+/* Basic Reset & Variables (Optional, can be in style.css) */
+:root {
+    --primary-color: #007bff; /* Biru cerah */
+    --secondary-color: #6c757d; /* Abu-abu netral */
+    --light-color: #f8f9fa; /* Putih keabuan */
+    --dark-color: #343a40; /* Hitam lembut */
+    --header-bg: #ffffff;
+    --header-text-color: #333;
+    --header-link-hover-color: var(--primary-color);
+    --header-height: 70px;
+    --font-family-main: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: var(--font-family-main);
+    margin-top: var(--header-height); /* Beri ruang untuk fixed header */
+}
+
+.site-header {
+    background-color: var(--header-bg);
+    height: var(--header-height);
+    position: fixed; /* Membuat header tetap di atas saat scroll */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Pastikan di atas konten lain */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+}
+
+.header-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+}
+
+/* Logo Area */
+.logo-area .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--header-text-color);
+}
+
+.logo-area .logo-icon {
+    font-size: 1.8em;
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+.logo-area .site-name {
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+/* Main Navigation */
+.main-navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.main-navigation ul li {
+    margin-left: 20px;
+}
+
+.main-navigation ul li a {
+    text-decoration: none;
+    color: var(--header-text-color);
+    font-weight: 500;
+    padding: 10px 5px;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.main-navigation ul li a .nav-icon {
+    margin-right: 6px;
+    font-size: 0.9em;
+}
+
+.main-navigation ul li a:hover,
+.main-navigation ul li a.active { /* Tambahkan class 'active' via JS/EJS jika perlu */
+    color: var(--header-link-hover-color);
+    border-bottom: 2px solid var(--header-link-hover-color);
+}
+
+/* Search Bar */
+.search-bar-area {
+    flex-grow: 0.5; /* Biarkan search bar mengambil ruang jika ada */
+    margin: 0 20px;
+}
+.search-form {
+    display: flex;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: var(--light-color);
+}
+.search-input {
+    border: none;
+    padding: 10px 15px;
+    font-size: 0.9em;
+    flex-grow: 1;
+    background-color: transparent;
+    outline: none;
+}
+.search-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0 15px;
+    cursor: pointer;
+    font-size: 1em;
+}
+.search-button:hover {
+    background-color: darken(var(--primary-color), 10%);
+}
+
+
+/* User Actions Area */
+.user-actions-area {
+    display: flex;
+    align-items: center;
+}
+
+.user-actions-area .action-button {
+    text-decoration: none;
+    padding: 8px 15px;
+    margin-left: 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+.user-actions-area .action-button i {
+    margin-right: 6px;
+}
+
+.user-actions-area .login-button {
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+.user-actions-area .login-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.user-actions-area .register-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+}
+.user-actions-area .register-button:hover {
+    background-color: darken(var(--primary-color), 10%);
+    border-color: darken(var(--primary-color), 10%);
+}
+
+
+/* User Dropdown */
+.dropdown {
+    position: relative;
+    margin-left: 15px;
+}
+
+.dropdown-toggle.user-greeting-button {
+    background-color: transparent;
+    color: var(--header-text-color);
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    border-radius: 20px;
+}
+.dropdown-toggle.user-greeting-button:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-toggle .user-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+    color: var(--primary-color);
+}
+.dropdown-toggle .fa-caret-down {
+    margin-left: 8px;
+    font-size: 0.8em;
+}
+
+.dropdown-menu {
+    display: none; /* Sembunyikan secara default, tampilkan dengan JS */
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    list-style: none;
+    margin: 5px 0 0 0;
+    padding: 0;
+    min-width: 200px;
+    z-index: 1001;
+}
+
+.dropdown-menu.show { /* Kelas untuk menampilkan dropdown */
+    display: block;
+}
+
+.dropdown-menu li a {
+    display: flex; /* Ubah menjadi flex untuk ikon */
+    align-items: center; /* Align ikon dan teks */
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+.dropdown-menu li a .dropdown-icon {
+    margin-right: 10px;
+    width: 16px; /* Beri lebar tetap agar rapi */
+    text-align: center;
+    color: var(--secondary-color);
+}
+
+.dropdown-menu li a:hover {
+    background-color: #f5f5f5;
+    color: var(--primary-color);
+}
+.dropdown-menu li a:hover .dropdown-icon {
+    color: var(--primary-color);
+}
+
+.dropdown-divider {
+    height: 1px;
+    margin: 5px 0;
+    overflow: hidden;
+    background-color: #e5e5e5;
+    border: none;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none; /* Sembunyikan di desktop */
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    color: var(--header-text-color);
+    cursor: pointer;
+}
+
+/* Styling untuk banner pesan (jika Anda menggunakannya) */
+.message-banner {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    text-align: center;
+}
+.message-banner.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+.message-banner.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+.message-banner.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+
+/* Responsive (Contoh sederhana) */
+@media (max-width: 992px) {
+    .search-bar-area {
+        display: none; /* Sembunyikan search bar di layar lebih kecil */
+    }
+    .main-navigation {
+        order: 3; /* Pindahkan navigasi ke bawah di mobile */
+        width: 100%;
+        display: none; /* Sembunyikan dan tampilkan dengan JS */
+        background-color: var(--header-bg);
+        position: absolute;
+        top: var(--header-height);
+        left:0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .main-navigation.open {
+        display: block;
+    }
+    .main-navigation ul {
+        flex-direction: column;
+        width: 100%;
+    }
+    .main-navigation ul li {
+        margin-left: 0;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .main-navigation ul li:last-child {
+        border-bottom: none;
+    }
+    .main-navigation ul li a {
+        padding: 15px;
+        display: block; /* Agar link mengisi lebar li */
+        border-bottom: none !important; /* Hapus border hover di mobile nav */
+    }
+    .mobile-menu-toggle {
+        display: block; /* Tampilkan tombol menu di mobile */
+        order: 2; /* Atur urutan */
+    }
+    .user-actions-area {
+        order: 1; /* Atur urutan */
+    }
+    .header-container {
+        width: 100%; /* Agar lebih pas di mobile */
+    }
+}
+
+@media (max-width: 576px) {
+    .logo-area .site-name {
+        display: none; /* Sembunyikan nama situs di layar sangat kecil, hanya ikon */
+    }
+    .user-actions-area .action-button span,
+    .user-actions-area .dropdown-toggle span:not(.user-icon):not(.fa-caret-down) {
+        /* display: none;  Sembunyikan teks di tombol, hanya ikon. Perlu hati-hati dengan username */
+    }
+    .user-actions-area .dropdown-toggle.user-greeting-button {
+        /* Hanya tampilkan ikon user di mobile jika perlu */
+    }
+}

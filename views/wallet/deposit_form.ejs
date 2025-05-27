@@ -1,0 +1,45 @@
+<%- contentFor('body') %>
+<h1><i class="fas fa-wallet"></i> Deposit Funds</h1>
+
+<% if (message && message.text) { %>
+    <div class="message-banner <%= message.type %>"><%= message.text %></div>
+<% } %>
+
+<form action="/wallet/deposit" method="POST" style="max-width: 700px; margin: 1rem auto;">
+    <div class="form-group mb-2">
+        <label for="amount">Amount to Deposit (IDR):</label>
+        <input type="number" name="amount" id="amount" class="form-control" placeholder="e.g., 50000" required min="1000">
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Select Payment Method:</label>
+        <% if (methods && methods.length > 0) { %>
+            <div class="payment-methods-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                <% methods.forEach(method => { %>
+                    <div class="payment-method-card" style="border: 1px solid var(--accent-primary); border-radius: var(--border-radius-sm); padding: 15px; text-align: center;">
+                        <input type="radio" name="method_code" value="<%= method.metode %>" id="method_<%= method.metode %>" required style="margin-right: 5px;">
+                        <label for="method_<%= method.metode %>" style="cursor: pointer; display: block;">
+                            <img src="<%= method.logo_image_url %>" alt="<%= method.name %>" style="max-height: 40px; max-width: 100px; margin-bottom: 8px;">
+                            <div style="font-size: 0.9em; color: var(--text-primary);"><%= method.name %></div>
+                            <div style="font-size: 0.75em; color: var(--text-secondary);">
+                                Min: <%= parseInt(method.minimum).toLocaleString('id-ID') %> 
+                                Max: <%= parseInt(method.maximum).toLocaleString('id-ID') %>
+                            </div>
+                            <div style="font-size: 0.75em; color: var(--text-secondary);">
+                                Fee: <%= method.fee !== '0' ? method.fee : '' %> 
+                                <%= method.percentage_fee !== '0' ? `${method.percentage_fee}%` : (method.fee === '0' ? 'No explicit fee' : '') %>
+                            </div>
+                        </label>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p>No payment methods available at the moment.</p>
+        <% } %>
+    </div>
+    <% if (methods && methods.length > 0) { %>
+    <div class="text-center mt-2">
+        <button type="submit" class="form-button"><i class="fas fa-arrow-right"></i> Proceed to Payment</button>
+    </div>
+    <% } %>
+</form>

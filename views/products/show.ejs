@@ -1,0 +1,94 @@
+<div class="product-detail-container">
+    <div class="product-detail-layout">
+        <div class="product-gallery-column">
+            <div class="product-main-image-container">
+                <img src="<%= product.imageUrl %>" alt="<%= product.name %>" class="product-main-image" id="mainProductImage">
+            </div>
+            <% if (product.images && product.images.length > 1) { %>
+                <div class="product-thumbnail-container">
+                    <% product.images.forEach((imgUrl, index) => { %>
+                        <img src="<%= imgUrl %>" alt="Thumbnail <%= index + 1 %> for <%= product.name %>" class="product-thumbnail <%= index === 0 ? 'active' : '' %>" onclick="changeMainImage('<%= imgUrl %>')">
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="product-info-column">
+            <h1 class="product-title-main"><%= product.name %></h1>
+            
+            <% if (product.category) { %>
+                <span class="product-category-tag"><%= product.category %></span>
+            <% } %>
+
+            <div class="seller-info-block">
+                <img src="<%= product.seller.avatarUrl || '/img/default-avatar.png' %>" alt="<%= product.seller.username %>" class="seller-avatar">
+                <div class="seller-details">
+                    <p class="seller-label">Sold by</p>
+                    <p><a href="/sellers/<%= product.seller._id %>" class="seller-name-link"><%= product.seller.username %></a></p>
+                </div>
+            </div>
+            
+            <div class="price-section-detail">
+                <% if (product.originalPrice && product.originalPrice > product.price) { %>
+                    <span class="original-price-detail">Rp <%= product.originalPrice.toLocaleString('id-ID') %></span>
+                    <span class="current-price-detail">Rp <%= product.price.toLocaleString('id-ID') %></span>
+                    <span class="discount-badge-detail"><%= Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) %>% OFF</span>
+                <% } else { %>
+                    <span class="current-price-detail">Rp <%= product.price.toLocaleString('id-ID') %></span>
+                <% } %>
+            </div>
+
+            <div class="product-actions-detail">
+                <% if (product.seller && product.seller.whatsappNumber) { %>
+                    <% const waMessage = encodeURIComponent(`Halo ${product.seller.username}, saya tertarik dengan produk Anda: "${product.name}" dari StellarMarket.`); %>
+                    <% const whatsappLink = `https://wa.me/${product.seller.whatsappNumber}?text=${waMessage}`; %>
+                    <a href="<%= whatsappLink %>" target="_blank" class="action-button-detail whatsapp-contact-btn">
+                        <i class="fab fa-whatsapp"></i> Contact Seller
+                    </a>
+                <% } %>
+                <!-- Tombol Add to Cart bisa jadi placeholder atau disesuaikan jika ada fitur keranjang -->
+                <a href="#" class="action-button-detail add-to-cart-btn-placeholder" onclick="alert('Feature coming soon or redirect to WA!'); return false;">
+                    <i class="fas fa-cart-plus"></i> Add to Cart (Example)
+                </a>
+            </div>
+
+            <% if (product.verifiedBy || locals.currentUser && locals.currentUser.role === 'admin') { %>
+                <div class="verified-by-badge">
+                    <i class="fas fa-shield-alt"></i> Verified by <%= product.verifiedBy || "StellarMarket Admin" %>
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+
+    <div class="product-description-section">
+        <h2><i class="fas fa-align-left"></i> Product Description</h2>
+        <div class="product-description-content">
+            <% if (product.description && product.description.length > 0) { %>
+                <%- product.description.replace(/\n/g, '<br>') %>
+            <% } else { %>
+                <p>No detailed description available for this product yet.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Bagian untuk Related Products atau Reviews bisa ditambahkan di sini -->
+</div>
+
+<script>
+    // Script kecil ini hanya untuk demo thumbnail, bisa diletakkan di <script> di main.ejs
+    // atau lebih baik lagi, di file JS terpisah jika tidak mengikuti permintaan in-line.
+    function changeMainImage(newImageUrl) {
+        const mainImage = document.getElementById('mainProductImage');
+        if (mainImage) {
+            mainImage.src = newImageUrl;
+        }
+        // Update active thumbnail (optional, for visual feedback)
+        document.querySelectorAll('.product-thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+            if (thumb.src === newImageUrl) {
+                thumb.classList.add('active');
+            }
+        });
+    }
+</script>

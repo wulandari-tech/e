@@ -1,0 +1,15 @@
+<h1>Seller Dashboard</h1>
+<% if (user) { %>
+    <p>Welcome, <%= user.username %>!</p>
+    <p>Your Role: <%= user.role %></p>
+    <% if (user.whatsappNumber) { %>
+        <p>Your WhatsApp: <%= user.whatsappNumber %></p>
+    <% } %>
+    <ul>
+        <li><a href="/user/my-products">My Products</a></li>
+        <li><a href="/products/new">Add New Product</a></li>
+        <!-- Add more seller specific links here -->
+    </ul>
+<% } else { %>
+    <p>Could not load user data.</p>
+<% } %>

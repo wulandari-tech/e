@@ -1,0 +1,46 @@
+<%- contentFor('body') %>
+<h1><i class="fas fa-hourglass-half"></i> Payment Instructions for <%= methodName %></h1>
+
+<% if (message && message.text) { %>
+    <div class="message-banner <%= message.type %>"><%= message.text %></div>
+<% } %>
+
+<div class="payment-details" style="background-color: var(--bg-secondary); padding: 20px; border-radius: var(--border-radius-md); max-width: 600px; margin: 1rem auto; text-align: center;">
+    <p><strong>Transaction ID:</strong> <%= deposit.reffId %></p>
+    <p><strong>Amount to Pay:</strong> IDR <%= deposit.amount.toLocaleString('id-ID') %></p>
+    <% if (deposit.fee > 0) { %>
+        <p style="font-size: 0.9em; color: var(--text-secondary);">Includes a fee of IDR <%= deposit.fee.toLocaleString('id-ID') %>. You will receive IDR <%= deposit.netAmount.toLocaleString('id-ID') %>.</p>
+    <% } else { %>
+         <p style="font-size: 0.9em; color: var(--text-secondary);">You will receive IDR <%= deposit.netAmount.toLocaleString('id-ID') %>.</p>
+    <% } %>
+    
+    <p><strong>Status:</strong> <span style="text-transform: capitalize; font-weight: bold; color: <%= deposit.status === 'pending' ? 'orange' : (deposit.status === 'success' ? 'var(--accent-success)' : 'var(--accent-error)') %>"><%= deposit.status %></span></p>
+
+    <% if (deposit.qrImageUrl && deposit.status === 'pending') { %>
+        <h3 style="color: var(--accent-primary); margin-top: 1.5rem;">Scan QR Code to Pay:</h3>
+        <img src="<%= deposit.qrImageUrl %>" alt="QR Code for Payment" style="max-width: 300px; width: 100%; margin: 1rem auto; border: 5px solid white; border-radius: var(--border-radius-sm); background-color: white;">
+    <% } else if (deposit.status === 'pending') { %>
+        <p style="color: var(--accent-primary); margin-top: 1.5rem;">Follow instructions provided by <%= methodName %> to complete the payment.</p>
+    <% } %>
+
+    <% if (deposit.expiresAt && deposit.status === 'pending') { %>
+        <p style="color: var(--accent-error); margin-top: 1rem;"><strong>Please complete payment before:</strong> <%= new Date(deposit.expiresAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) %> WIB</p>
+    <% } %>
+
+    <% if (deposit.status === 'pending') { %>
+        <p class="mt-2" style="font-size: 0.9em;">After payment, your balance will be updated once confirmed. This might take a few minutes.</p>
+        <form action="/wallet/deposit/<%= deposit._id %>/confirm-payment" method="POST" class="mt-2">
+             <button type="submit" class="form-button" style="background: var(--accent-success);">
+                <i class="fas fa-check-circle"></i> I Have Paid (Simulate Confirmation)
+            </button>
+        </form>
+        <p style="font-size: 0.8em; color: var(--text-secondary); margin-top:10px;">(Note: In a real system, this is automated. This button is for demo.)</p>
+    <% } else if (deposit.status === 'success') { %>
+        <p class="mt-2" style="color: var(--accent-success); font-weight: bold;">Payment successfully processed!</p>
+    <% } %>
+    
+    <div class="mt-2 button-group">
+        <a href="/user/profile" class="form-button" style="background: var(--accent-secondary);"><i class="fas fa-user-circle"></i> Back to Profile</a>
+        <a href="/wallet/transactions" class="form-button" style="background: var(--bg-tertiary); border: 1px solid var(--accent-primary); color: var(--accent-primary);"><i class="fas fa-list-alt"></i> View Transactions</a>
+    </div>
+</div>

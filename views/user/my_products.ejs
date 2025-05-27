@@ -1,0 +1,33 @@
+<h1>My Products</h1>
+<a href="/products/new">Add New Product</a>
+<% if (products && products.length > 0) { %>
+    <table>
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% products.forEach(product => { %>
+                <tr>
+                    <td><img src="<%= product.imageUrl %>" alt="<%= product.name %>" style="width:50px; height:auto;"></td>
+                    <td><%= product.name %></td>
+                    <td>$<%= product.price.toFixed(2) %></td>
+                    <td><%= product.status %></td>
+                    <td>
+                        <a href="/products/<%= product._id %>">View</a>
+                        <% if (product.status !== 'approved') { %>
+                            <!-- <a href="/products/<%= product._id %>/edit">Edit</a> -->
+                        <% } %>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+<% } else { %>
+    <p>You haven't added any products yet.</p>
+<% } %>
