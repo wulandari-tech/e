@@ -1,5 +1,11 @@
 <h1>Add New Product</h1>
-<% if (message) { %><p class="error-message"><%= message %></p><% } %>
+
+<% if (locals.message && locals.message.text) { %>
+    <div class="message-banner <%= locals.message.type || 'error' %>"><%= locals.message.text %></div>
+<% } else if (typeof locals.message === 'string' && locals.message) { %>
+    <div class="message-banner error"><%= locals.message %></div>
+<% } %>
+
 <form action="/products" method="POST" enctype="multipart/form-data">
     <div>
         <label for="name">Product Name:</label>
@@ -10,16 +16,18 @@
         <textarea id="description" name="description" rows="5" required></textarea>
     </div>
     <div>
-        <label for="price">Price ($):</label>
-        <input type="number" id="price" name="price" step="0.01" required>
+        <label for="price">Price (IDR):</label>
+        <input type="number" id="price" name="price" step="1" min="0" required>
     </div>
     <div>
         <label for="category">Category:</label>
-        <input type="text" id="category" name="category">
+        <input type="text" id="category" name="category" placeholder="e.g., Electronics, Clothing">
     </div>
     <div>
         <label for="productImage">Product Image:</label>
         <input type="file" id="productImage" name="productImage" accept="image/png, image/jpeg, image/jpg" required>
     </div>
-    <button type="submit">Submit for Approval</button>
+    <div class="text-center">
+        <button type="submit" class="form-button"><i class="fas fa-plus-circle"></i> Submit for Approval</button>
+    </div>
 </form>
