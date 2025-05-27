@@ -25,16 +25,16 @@ const upload = multer({
 });
 
 
-router.get('/', isNotBanned, async (req, res) => {
+router.get('/', isNotBanned, async (req, res, next) => {
     try {
-        const products = await Product.find({ status: 'approved' }).populate('seller', 'username');
+        const products = await Product.find({ status: 'approved' }).populate('seller', 'username avatarUrl whatsappNumber');
         res.render('products/index', {
             title: 'All Products',
             products,
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).render('500', { title: 'Server Error', error: err });
+        console.error("Error fetching all products:", err);
+        next(err);
     }
 });
 
@@ -44,11 +44,15 @@ router.get('/new', isAuthenticated, isSeller, (req, res) => {
     });
 });
 
-router.post('/', isAuthenticated, isSeller, upload.single('productImage'), async (req, res) => {
+router.post('/', isAuthenticated, isSeller, upload.single('productImage'), async (req, res, next) => {
     try {
         const { name, description, price, category } = req.body;
         if (!req.file) {
             req.flash('message', { type: 'error', text: 'Product image is required.' });
+            return res.redirect('/products/new');
+        }
+        if (!name || !description || !price) {
+            req.flash('message', { type: 'error', text: 'Name, description, and price are required fields.' });
             return res.redirect('/products/new');
         }
 
@@ -61,36 +65,57 @@ router.post('/', isAuthenticated, isSeller, upload.single('productImage'), async
             name,
             description,
             price: parseFloat(price),
-            category,
+            category: category || 'Uncategorized',
             imageUrl: result.secure_url,
             cloudinaryId: result.public_id,
             seller: req.user._id,
-            status: req.user.role === 'admin' ? 'approved' : 'pending'
+            status: req.user.role === 'admin' ? 'approved' : 'pending',
+            verifiedBy: req.user.role === 'admin' ? req.user.username : null
         });
         await newProduct.save();
-        req.flash('message', { type: 'success', text: 'Product submitted! It will be reviewed by an admin.' });
+        req.flash('message', { type: 'success', text: 'Product submitted! It will be reviewed by an admin if you are not an admin.' });
         res.redirect('/user/my-products');
     } catch (err) {
         console.error("Error creating product:", err);
-        req.flash('message', { type: 'error', text: 'Error adding product: ' + err.message });
-        res.redirect('/products/new');
+        if (err.name === 'ValidationError') {
+            req.flash('message', { type: 'error', text: 'Validation Error: ' + Object.values(err.errors).map(e => e.message).join(', ') });
+            return res.redirect('/products/new');
+        }
+        next(err);
     }
 });
 
-router.get('/search', isNotBanned, async (req, res) => {
+router.get('/search', isNotBanned, async (req, res, next) => {
     try {
         const query = req.query.q;
-        if (!query) {
+        if (!query || query.trim() === "") {
             return res.redirect('/products');
         }
         const products = await Product.find({
             status: 'approved',
-            $or: [
-                { name: { $regex: query, $options: 'i' } },
-                { category: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } }
-            ]
-        }).populate('seller', 'username');
+            $text: { $search: query } // Using text index for better search
+        }, {
+            score: { $meta: "textScore" } // For sorting by relevance if text index is used
+        }).sort({ score: { $meta: "textScore" } }).populate('seller', 'username avatarUrl whatsappNumber');
+
+
+        if (products.length === 0) {
+             const regexProducts = await Product.find({
+                status: 'approved',
+                $or: [
+                    { name: { $regex: query, $options: 'i' } },
+                    { category: { $regex: query, $options: 'i' } },
+                    { description: { $regex: query, $options: 'i' } }
+                ]
+            }).populate('seller', 'username avatarUrl whatsappNumber');
+             res.render('products/index', {
+                title: `Search Results for "${query}"`,
+                products: regexProducts,
+                searchQuery: query
+            });
+            return;
+        }
+
 
         res.render('products/index', {
             title: `Search Results for "${query}"`,
@@ -98,13 +123,13 @@ router.get('/search', isNotBanned, async (req, res) => {
             searchQuery: query
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).render('500', { title: 'Search Error', error: err });
+        console.error("Error searching products:", err);
+        next(err);
     }
 });
 
 
-router.get('/:id', isNotBanned, async (req, res) => {
+router.get('/:id', isNotBanned, async (req, res, next) => {
     try {
         const product = await Product.findById(req.params.id).populate('seller', 'username email whatsappNumber avatarUrl');
         if (!product || (product.status !== 'approved' && (!req.user || (req.user.role !== 'admin' && product.seller._id.toString() !== req.user._id.toString())))) {
@@ -115,16 +140,16 @@ router.get('/:id', isNotBanned, async (req, res) => {
             product
         });
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching single product:", err);
         if (err.kind === 'ObjectId') {
             return res.status(404).render('404', { title: 'Product Not Found (Invalid ID)' });
         }
-        res.status(500).render('500', { title: 'Server Error', error: err });
+        next(err);
     }
 });
 
 
-router.get('/:id/edit', isAuthenticated, isOwnerOrAdmin, async (req, res) => {
+router.get('/:id/edit', isAuthenticated, isOwnerOrAdmin, async (req, res, next) => {
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -136,13 +161,13 @@ router.get('/:id/edit', isAuthenticated, isOwnerOrAdmin, async (req, res) => {
             product,
         });
     } catch (err) {
-        console.error(err);
+        console.error("Error loading product for edit:", err);
         req.flash('message', { type: 'error', text: 'Error loading product for edit.' });
-        res.redirect('/user/my-products');
+        next(err);
     }
 });
 
-router.put('/:id', isAuthenticated, isOwnerOrAdmin, upload.single('productImage'), async (req, res) => {
+router.put('/:id', isAuthenticated, isOwnerOrAdmin, upload.single('productImage'), async (req, res, next) => {
     try {
         const { name, description, price, category } = req.body;
         const product = await Product.findById(req.params.id);
@@ -151,17 +176,25 @@ router.put('/:id', isAuthenticated, isOwnerOrAdmin, upload.single('productImage'
             req.flash('message', { type: 'error', text: 'Product not found.' });
             return res.redirect('/user/my-products');
         }
+        if (!name || !description || !price) {
+            req.flash('message', { type: 'error', text: 'Name, description, and price are required fields.' });
+            return res.redirect(`/products/${req.params.id}/edit`);
+        }
 
         product.name = name;
         product.description = description;
         product.price = parseFloat(price);
-        product.category = category;
-        product.status = (req.user.role === 'admin' && product.seller.toString() !== req.user._id.toString()) ? product.status : 'pending';
+        product.category = category || product.category;
+
+        if (req.user.role !== 'admin' || product.seller.toString() === req.user._id.toString()) {
+             product.status = 'pending';
+             product.verifiedBy = null;
+        }
 
 
         if (req.file) {
             if (product.cloudinaryId) {
-                await cloudinary.uploader.destroy(product.cloudinaryId);
+                await cloudinary.uploader.destroy(product.cloudinaryId).catch(err => console.error("Cloudinary destroy error:", err));
             }
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'e-commerce-wanzofc/products',
@@ -172,26 +205,29 @@ router.put('/:id', isAuthenticated, isOwnerOrAdmin, upload.single('productImage'
         }
 
         await product.save();
-        req.flash('message', { type: 'success', text: 'Product updated successfully. It may require re-approval.' });
+        req.flash('message', { type: 'success', text: 'Product updated successfully. It may require re-approval if you are not an admin.' });
         res.redirect(`/products/${product._id}`);
     } catch (err) {
         console.error("Error updating product:", err);
-        req.flash('message', { type: 'error', text: 'Error updating product: ' + err.message });
-        res.redirect(`/products/${req.params.id}/edit`);
+        if (err.name === 'ValidationError') {
+            req.flash('message', { type: 'error', text: 'Validation Error: ' + Object.values(err.errors).map(e => e.message).join(', ') });
+            return res.redirect(`/products/${req.params.id}/edit`);
+        }
+        next(err);
     }
 });
 
 
-router.delete('/:id', isAuthenticated, isOwnerOrAdmin, async (req, res) => {
+router.delete('/:id', isAuthenticated, isOwnerOrAdmin, async (req, res, next) => {
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
             req.flash('message', { type: 'error', text: 'Product not found.' });
-            return res.redirect(req.user.role === 'admin' ? '/admin/products-approval' : '/user/my-products');
+            return res.redirect(req.user.role === 'admin' ? '/admin/dashboard' : '/user/my-products');
         }
 
         if (product.cloudinaryId) {
-            await cloudinary.uploader.destroy(product.cloudinaryId);
+            await cloudinary.uploader.destroy(product.cloudinaryId).catch(err => console.error("Cloudinary destroy error on delete:", err));
         }
         await Product.findByIdAndDelete(req.params.id);
 
@@ -203,8 +239,7 @@ router.delete('/:id', isAuthenticated, isOwnerOrAdmin, async (req, res) => {
         }
     } catch (err) {
         console.error("Error deleting product:", err);
-        req.flash('message', { type: 'error', text: 'Error deleting product.' });
-        res.redirect(req.user.role === 'admin' ? '/admin/products-approval' : '/user/my-products');
+        next(err);
     }
 });
 
